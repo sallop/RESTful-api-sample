@@ -2,8 +2,16 @@
 //phpinfo();
 require '../vendor/autoload.php';
 
+//$settings = [
+//	'view' => new \Slim\Extras\Views\Twig(),
+//	'templates.path' => '../Views',
+//	'model' => (Object)array("message" => "Hello World")
+//];
+//
 //echo "Hello World"
-$app = new \Slim\Slim();
+$app = new \Slim\Slim([
+	'view' => new \Slim\Views\Twig()
+]);
 
 $app->get('/', function() use($app) {
 	echo "Home Page";
@@ -12,8 +20,10 @@ $app->get('/', function() use($app) {
 });
 
 $app->get('/testpage', function() use ($app){
-	//echo "Test Page";
-	$app->render('testpage.php');
+	$app->render('testpage.php', [
+		'character' => 'Tyler Durden',
+		'quote' => 'The liberator who destroyed my property has realigned perceptions.'
+	]);
 });
 
 $app->get('/add_used', function() use ($app){
