@@ -9,6 +9,10 @@ require '../vendor/autoload.php';
 //];
 //
 //echo "Hello World"
+$db = new PDO('mysql:host=localhost;dbname=bazaar;charset=utf8','tycc','');
+$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$db->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+
 $app = new \Slim\Slim([
 	'view' => new \Slim\Views\Twig()
 ]);
@@ -26,24 +30,62 @@ $app->get('/testpage', function() use ($app){
 	]);
 });
 
-$app->get('/add_used', function() use ($app){
-	echo "add_used.php";
-	$app->render('add_used.php');
+$app->get('/add_used', function() use ($app, $db){
+	// echo "add_used.php";
+	// read database contents from add_used.php
+	// moddel = PDO();
+	$affected_rows = $db->exec("INSERT INTO used_ticket (time) VALUES (NOW())");
+	//echo $affected_rows . " were affected";
+	$app->render('add_used.php', ['affected_rows' => $affected_rows]);
 });
 
-$app->get('/delete_used', function() use ($app){
-	echo "delete_used.php";
-	//$app->render('delete_used.php');
+$app->get('/delete_used', function() use ($app, $db){
+	$affected_rows = $db->exec("DELETE FROM used_ticket ORDER BY used_number DESC LIMIT 1;");
+	$app->render('delete_used.php', ['affected_rows' => $affected_rows]);
 });
 
-$app->get('/show_ticket', function() use ($app){
+$app->get('/show_ticket', function() use ($app, $db){
 	echo "show_ticket.php";
-	$app->render('show_ticket.php');
+	$rows = [];
+	// read database contents from show_ticket.php
+	try {
+		// connect as appropriate as above
+		$stmt = $db->query('SELECT * FROM used_ticket;'); // invalid query !
+		$rows = $stmt->fetchAll();
+		//var_dump( $rows );
+		//echo '<ol>';
+		//while( $row = $stmt->fetch(PDO::FETCH_ASSOC)){
+		//	echo '<li>'.$row['used_number']." ".$row['time'].'</li>';
+		//}
+		//echo '</ol>';
+	} catch (PDOException $ex){
+		echo "An Error occured!";
+		//some_logging_function( $ex->getMessage() );
+	}
+	$app->render('show_ticket.php', ['rows' => $rows]);
 });
 
-$app->get('/show_state', function() use ($app){
+$app->get('/show_state', function() use ($app, $db){
 	echo "show_state.php";
-	$app->render('show_state.php');
+	// read database contents from show_state.php
+	//$app->config('view', ''); // not work
+	//$app->render('show_state.php');
+	try {
+		// connect as appropriate as above
+		$stmt = $db->query('SELECT * FROM food_ticket;'); // invalid query !
+		$rows = $stmt->fetchAll();
+		//$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+		//var_dump( $data );
+		//echo '<ol>';
+		//while( $row = $stmt->fetch(PDO::FETCH_ASSOC)){
+		//	echo '<li>'.$row['food_name']." ".$row['price'].'</li>';
+		//}
+		//echo '</ol>';
+	} catch (PDOException $ex){
+		echo "An Error occured!";
+		//some_logging_function( $ex->getMessage() );
+	}
+	$app->render('show_state.php', ['rows' => $rows]);
 });
 
 
